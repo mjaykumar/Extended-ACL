@@ -1,0 +1,59 @@
+1) drwxrwx--x   - hive            hive                     0 2017-01-26 16:43 /user/etl_app
+
+[jay.kumar@br1paprhen01 ~]$ hdfs dfs -getfacl /user/etl_app
+# file: /user/etl_app
+# owner: hive
+# group: hive
+user::rwx
+group::rwx
+other::--x
+
+
+2) adding default acl at directory level, so that it can be inherited by child directories and files. 
+
+
+
+
+ hdfs dfs -setfacl -m default:user::rwx,default:group::rwx,default:group:analytics_hive:rwx,default:mask::rwx    /user/etl_app
+
+
+ hdfs dfs -getfacl /user/etl_app
+# file: /user/etl_app
+# owner: hive
+# group: hive
+user::rwx
+group::rwx
+other::--x
+default:user::rwx
+default:group::rwx
+default:group:analytics_hive:rwx
+default:mask::rwx
+default:other::--x
+
+Note : Still etl_app will not be able to access folder (/user/etl_app) yet, as access acl is missing.
+
+3) adding access acl 
+
+[jay.kumar@br1paprhen01 ~]$ hdfs dfs -setfacl -m  group:analytics_hive:rwx,default:mask::rwx    /user/etl_app
+[jay.kumar@br1paprhen01 ~]$ hdfs dfs -getfacl /user/etl_app
+# file: /user/etl_app
+# owner: hive
+# group: hive
+user::rwx
+group::rwx
+group:analytics_hive:rwx
+mask::rwx
+other::--x
+default:user::rwx
+default:group::rwx
+default:group:analytics_hive:rwx
+default:mask::rwx
+default:other::--x
+
+
+Now , etl_app user should have access (rwx) in /user/etl_app) folder. try creating new folder sqoop and getfacl
+
+
+Note : To remove completedly the XACL : hdfs dfs -setfacl -b  /user/etl_test
+
+(http://hortonworks.com/blog/hdfs-acls-fine-grained-permissions-hdfs-files-hadoop/)
